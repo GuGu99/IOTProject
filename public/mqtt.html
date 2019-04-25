@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Insert title here</title>
+<script src="/socket.io/socket.io.js"></script>
+<script src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script type="text/javascript">
+	var socket=null;
+	var timer=null;
+	$(document).ready(function(){ // $(document) : html 전체
+		socket=io.connect(); // 3000포트와 연결
+		// Node.js에서 보낸 데이터를 수신하는 부분
+		socket.on("socket_evt_mqtt", function(data){ // 이벤트 이름은 마음대로 해도 됨
+			data=JSON.parse(data);
+			$("#mqttlist").html('<li>'+data.tmp+'('+data.hum+'%)'+'</li>') // id는 #으로 접근, append()는 쌓는거
+		}); 
+		if (timer==null){
+			timer=window.setInterval("timer1()", 1000); // 1초에 한번 타이머 함수 구동
+		}
+	});
+	
+	function timer1(){
+		socket.emit("socket_evt_mqtt", JSON.stringify({})); // 이벤트 날림
+		console.log("---------");
+	}
+	function ledOnOff(value){
+		// console.log("button pressed : " + value);
+		socket.emit("socket_evt_led", JSON.stringify({led:Number(value)})); // 이벤트 날림
+	}
+	
+	function AjaxledOnOff(value){
+		if (value == '1') var value = "on";
+		else if (value == '2') var value = "off";
+		$.ajax({
+			url : "http://127.0.0.1:3000/devices/led/"+value,
+			type : "post",
+			success : function(data) {},
+			error : function(){ alert("error!"); }
+		});
+	}
+	
+</script>
+</head>
+<body>
+MQTT 모니터링 서비스
+<div id="msg">
+	<h1>Socket 방식 통신</h1>
+	<button onClick="ledOnOff(1)">LED ON</button>
+	<button onClick="ledOnOff(2)">LED OFF</button>
+	
+	<h1>Web 방식 통신</h1>
+	<button onClick="AjaxledOnOff(1)">LED ON</button>
+	<button onClick="AjaxledOnOff(2)">LED OFF</button>
+	
+	<div id="mqtt_logs">
+		<ul id="mqttlist"></ul>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="EUC-KR">
+<title>Insert title here</title>
+<script src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script type="text/javascript">
+	$(document).ready(function(){
+		
+	});
+	
+	function ledOnOff(value){
+		if (value == '1') var value = "on";
+		else if (value == '2') var value = "off";
+		$.ajax({
+			url : "http://127.0.0.1:3000/devices/led/"+value,
+			type : "post",
+			success : function(data) {},
+			error : function(){ alert("error!"); }
+		});
+	}
+	
+</script>
+</head>
+<body>
+	<button onClick="ledOnOff(1)">LED ON</button>
+	<button onClick="ledOnOff(2)">LED OFF</button>
+</body>
+</html>
