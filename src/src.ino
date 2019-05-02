@@ -1,6 +1,7 @@
+#include <DHT11.h>
+
 #include <ESP8266WiFi.h>
 #include "PubSubClient.h"
-#include <DHT11.h>
 
 byte server1[] = {192, 168, 0, 10}; // MQTT 브로커
 int port = 1883;
@@ -59,12 +60,19 @@ void loop() {
   mqttClient.loop();
   float tmp, hum;
   int err = dht11.read(tmp, hum); // 데이터 읽기
-  if (err == 0) {
+
+  if (!err) {
     char message[64] = "", pTmpBuf[50], pHumBuf[50];
+    Serial.print("tmp : ");
+    Serial.print(tmp);
+    Serial.print("hum : ");
+    Serial.println(hum);
     dtostrf(tmp, 5, 2, pTmpBuf);
     dtostrf(hum, 5, 2, pHumBuf);
-    sprintf(message, "{\"temp\":5s, \"hum\" : %s}", pTmpBuf, pHumBuf);
+    sprintf(message, "{\"temp\":%s, \"hum\" : %s}", pTmpBuf, pHumBuf);
     mqttClient.publish("dht11", message);
+  }else{
+    Serial.println("DHT11 read failed...");
   }
   delay(3000);
 }

@@ -24,7 +24,7 @@ var server = http.createServer(app);
 var mongoDB = require("mongodb").MongoClient; // ����� �������� MongoClient ��ü ����
 var url = "mongodb://127.0.0.1:27017/gsmiot";
 var dbObj = null;
-mongoDB.connect(url, function(err, db){
+mongoDB.connect(url, function (err, db) {
 	dbObj = db;
 	console.log("DB Connected.");
 });
@@ -33,29 +33,29 @@ mongoDB.connect(url, function(err, db){
 /**
  * Listen on provided port, on all network interfaces.
  */
-var mqtt = require("mqtt");	
+var mqtt = require("mqtt");
 var client = mqtt.connect("mqtt://192.168.0.10");
 
-client.on("connect", function(){ 
+client.on("connect", function () {
 	console.log("mqtt server connection...");
 	client.subscribe("dht11");
 }); // ���� �Ǿ����� �̺�Ʈ �ɱ�
 
-client.on("message", function(topic, msg){
-	if (topic == "dht11"){
+client.on("message", function (topic, msg) {
+	if (topic == "dht11") {
 		console.log(msg.toString()); // ��ü�� �Ѿ���Ƿ� ��Ʈ������ ��ȯ
 		// db insert
 		var obj = JSON.parse(msg); // text->object
 		obj.created_at = new Date(); // created_at�� ������ �ڵ����� �����Ѵ�.
-		console.log(obj); // obj print
-		
+		console.log(obj);
+
 		// ���̺� ���� DB�� �ֱ�
 		var dht11 = dbObj.collection("dht11"); // ���̺� �����
-		dht11.save(obj, function(err, result){
+		dht11.save(obj, function (err, result) {
 			if (err) console.log(err);
 			else console.log(JSON.stringify(result));
 		})
-		
+
 		/*
 		var dht11 = dbObj.collection("dht11"); // DB ����
 		dht11.save(obj, function(err, result){
@@ -64,23 +64,24 @@ client.on("message", function(topic, msg){
 		*/
 	}
 })
+
 // --MongoDB--> | Node.js<--socket-->HTML(javascript) |<--- Internet Explorer, Android(����͸�)
 var io = require('socket.io')(server);
-io.on("connection", function(socket){ // ����. ���� ����
+io.on("connection", function (socket) { // ����. ���� ����
 	console.log("web connetcion...");
-	socket.on("socket_evt_mqtt", function(data){ // �̺�Ʈ �ޱ�
+	socket.on("socket_evt_mqtt", function (data) { // �̺�Ʈ �ޱ�
 		var dht11 = dbObj.collection("dht11"); // ���̺� �����(������ �׳� ������)
-		dht11.find({}).sort({_id:-1}).limit(1).toArray(function(err, results){
-			if (!err){
+		dht11.find({}).sort({ _id: -1 }).limit(1).toArray(function (err, results) {
+			if (!err) {
 				socket.emit("socket_evt_mqtt", JSON.stringify(results[0])); // �̺�Ʈ ������
 			}
 		});
 	});
-	
-	socket.on("socket_evt_led", function(data){
+
+	socket.on("socket_evt_led", function (data) {
 		var obj = JSON.parse(data);
 		// console.log(obj);
-		client.publish("led", obj.led+'');
+		client.publish("led", obj.led + '');
 	});
 });
 
@@ -93,19 +94,19 @@ server.on('listening', onListening);
  */
 
 function normalizePort(val) {
-  var port = parseInt(val, 10);
+	var port = parseInt(val, 10);
 
-  if (isNaN(port)) {
-    // named pipe
-    return val;
-  }
+	if (isNaN(port)) {
+		// named pipe
+		return val;
+	}
 
-  if (port >= 0) {
-    // port number
-    return port;
-  }
+	if (port >= 0) {
+		// port number
+		return port;
+	}
 
-  return false;
+	return false;
 }
 
 /**
@@ -113,27 +114,27 @@ function normalizePort(val) {
  */
 
 function onError(error) {
-  if (error.syscall !== 'listen') {
-    throw error;
-  }
+	if (error.syscall !== 'listen') {
+		throw error;
+	}
 
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
+	var bind = typeof port === 'string'
+		? 'Pipe ' + port
+		: 'Port ' + port;
 
-  // handle specific listen errors with friendly messages
-  switch (error.code) {
-    case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
-      process.exit(1);
-      break;
-    case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
-      process.exit(1);
-      break;
-    default:
-      throw error;
-  }
+	// handle specific listen errors with friendly messages
+	switch (error.code) {
+		case 'EACCES':
+			console.error(bind + ' requires elevated privileges');
+			process.exit(1);
+			break;
+		case 'EADDRINUSE':
+			console.error(bind + ' is already in use');
+			process.exit(1);
+			break;
+		default:
+			throw error;
+	}
 }
 
 /**
@@ -141,9 +142,9 @@ function onError(error) {
  */
 
 function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
+	var addr = server.address();
+	var bind = typeof addr === 'string'
+		? 'pipe ' + addr
+		: 'port ' + addr.port;
+	debug('Listening on ' + bind);
 }
